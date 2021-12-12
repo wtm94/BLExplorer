@@ -13,8 +13,8 @@ android {
         applicationId "org.ligi.blexplorer"
         minSdkVersion 18
         targetSdkVersion 29
-        versionCode 13
-        versionName "2.0-beta"
+        versionCode 14
+        versionName "2.0"
         archivesBaseName = "BLExplorer-$versionName"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
