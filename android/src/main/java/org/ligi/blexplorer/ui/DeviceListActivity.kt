@@ -39,6 +39,7 @@ import org.ligi.blexplorer.databinding.ItemDeviceBinding
 import org.ligi.blexplorer.util.DevicePropertiesDescriber
 import org.ligi.blexplorer.util.ManufacturerRecordParserFactory
 import org.ligi.tracedroid.sending.TraceDroidEmailSender
+import java.io.Closeable
 import java.math.BigInteger
 
 class DeviceListActivity : AppCompatActivity() {
@@ -120,17 +121,12 @@ private class DeviceListDiffCallback : DiffUtil.ItemCallback<DeviceListDeviceInf
 }
 
 class DeviceListViewModel : ViewModel() {
-    private val deviceListData = DeviceListLiveData()
+    private val deviceListData = DeviceListLiveData().apply { addCloseable(this) }
     internal val deviceListLiveData : LiveData<List<DeviceListDeviceInfo>> = deviceListData
     internal val bluetoothStateLiveData : LiveData<RxBleClient.State> = BluetoothStateChangeLiveData()
-
-    override fun onCleared() {
-        super.onCleared()
-        deviceListData.onCleared()
-    }
 }
 
-private class DeviceListLiveData : LiveData<List<DeviceListDeviceInfo>>() {
+private class DeviceListLiveData : LiveData<List<DeviceListDeviceInfo>>(), Closeable {
     private var disposable : Disposable = bluetoothController.deviceListObservable
             .toFlowable(BackpressureStrategy.LATEST)
             .observeOn(Schedulers.computation())
@@ -144,9 +140,7 @@ private class DeviceListLiveData : LiveData<List<DeviceListDeviceInfo>>() {
             }.observeOn(AndroidSchedulers.mainThread())
             .subscribe { value = it }
 
-    fun onCleared() {
-        disposable.dispose()
-    }
+    override fun close() = disposable.dispose()
 }
 
 private class BluetoothStateChangeLiveData : LiveData<RxBleClient.State>() {
@@ -162,6 +156,7 @@ private class BluetoothStateChangeLiveData : LiveData<RxBleClient.State>() {
     override fun onInactive() {
         super.onInactive()
         disposable?.dispose()
+        disposable = null
     }
 }
 
