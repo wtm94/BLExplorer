@@ -1,7 +1,6 @@
 package org.ligi.blexplorer.ui
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -22,9 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.polidea.rxandroidble2.RxBleClient
@@ -45,8 +42,6 @@ import org.ligi.tracedroid.sending.TraceDroidEmailSender
 import java.math.BigInteger
 
 class DeviceListActivity : AppCompatActivity() {
-
-
     private val binding by lazy { ActivityWithRecyclerBinding.inflate(layoutInflater) }
     private val viewModel: DeviceListViewModel by viewModels()
 
@@ -55,13 +50,10 @@ class DeviceListActivity : AppCompatActivity() {
         TraceDroidEmailSender.sendStackTraces(BUG_REPORT_EMAIL, this)
 
         setContentView(binding.root)
+
         val adapter = DeviceRecycler()
-
-        binding.contentList.layoutManager = LinearLayoutManager(this)
         binding.contentList.adapter = adapter
-
         viewModel.deviceListLiveData.observe(this) { adapter.submitList(it) }
-
         val requestLocPermLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
         viewModel.bluetoothStateLiveData.observe(this) { state ->
             when(state) {
@@ -88,7 +80,9 @@ class DeviceListActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        startActivity(Intent(this, HelpActivity::class.java))
+        when(item.itemId) {
+            R.id.action_help -> startActivity(Intent(this, HelpActivity::class.java))
+        }
         return super.onOptionsItemSelected(item)
     }
 }
@@ -97,7 +91,7 @@ class LocPermExplanationDialog(private val requestLocPermLauncher: ActivityResul
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return AlertDialog.Builder(requireContext())
                 .setMessage(R.string.loc_perm_explanation)
-                .setPositiveButton(android.R.string.ok) { _,_ ->requestLocPermLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)  }
+                .setPositiveButton(android.R.string.ok) { _,_ -> requestLocPermLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)  }
                 .create()
     }
 }
@@ -172,7 +166,6 @@ private class BluetoothStateChangeLiveData : LiveData<RxBleClient.State>() {
 }
 
 private class DeviceViewHolder(private val binding: ItemDeviceBinding) : RecyclerView.ViewHolder(binding.root) {
-
     lateinit var device: BluetoothDevice
 
     fun applyDevice(deviceInfo: DeviceListDeviceInfo) {
