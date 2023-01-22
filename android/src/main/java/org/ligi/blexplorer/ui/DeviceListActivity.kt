@@ -1,6 +1,7 @@
 package org.ligi.blexplorer.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -14,6 +15,7 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -45,22 +47,19 @@ import java.math.BigInteger
 class DeviceListActivity : AppCompatActivity() {
 
 
-    private lateinit var binding : ActivityWithRecyclerBinding
-    private lateinit var viewModel: DeviceListViewModel
+    private val binding by lazy { ActivityWithRecyclerBinding.inflate(layoutInflater) }
+    private val viewModel: DeviceListViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         TraceDroidEmailSender.sendStackTraces(BUG_REPORT_EMAIL, this)
 
-        binding = ActivityWithRecyclerBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val adapter = DeviceRecycler()
 
         binding.contentList.layoutManager = LinearLayoutManager(this)
         binding.contentList.adapter = adapter
 
-        viewModel = ViewModelProvider(this).get(DeviceListViewModel::class.java)
         viewModel.deviceListLiveData.observe(this) { adapter.submitList(it) }
 
         val requestLocPermLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
@@ -77,9 +76,7 @@ class DeviceListActivity : AppCompatActivity() {
                     { LocPermExplanationDialog(requestLocPermLauncher).show(supportFragmentManager, null) }
                     else { requestLocPermLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
                 }
-                RxBleClient.State.LOCATION_SERVICES_NOT_ENABLED -> {
-                    LocServiceEnableDialog().show(supportFragmentManager, null)
-                }
+                RxBleClient.State.LOCATION_SERVICES_NOT_ENABLED -> LocServiceEnableDialog().show(supportFragmentManager, null)
                 else -> {}
             }
         }
