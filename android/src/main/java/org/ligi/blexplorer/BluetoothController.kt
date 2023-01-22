@@ -1,5 +1,6 @@
 package org.ligi.blexplorer
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -17,8 +18,8 @@ import io.reactivex.functions.Action
 import io.reactivex.subjects.PublishSubject
 import org.ligi.blexplorer.util.AtomicOptional
 import timber.log.Timber
-import java.util.*
 
+@SuppressLint("CheckResult")
 internal class BluetoothController(context: Context) {
     private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
     private val rxBleClient = RxBleClient.create(context)
@@ -64,6 +65,7 @@ internal class BluetoothController(context: Context) {
     }
 
     private var scanDisposable : Disposable? = null
+    private val scanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build()
 
     private val deviceListSubject = PublishSubject.create<List<DeviceInfo>>()
 
@@ -73,24 +75,24 @@ internal class BluetoothController(context: Context) {
         shouldScanObservable.observeOn(AndroidSchedulers.mainThread())
                 .distinctUntilChanged()
                 .subscribe { shouldScan ->
-                    if(shouldScan) {
-                        val scanSettings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_BALANCED).build()
-                        scanDisposable = rxBleClient.scanBleDevices(scanSettings)
-                                .subscribe(
-                                    {
-                                        val device = it.bleDevice.bluetoothDevice
-                                        deviceMap[device] = DeviceInfo(it)
-                                        deviceListSubject.onNext(deviceMap.values.toList())
-                                    },
-                                    { Timber.e(it,"Exception occurred while scanning for BLE devices") }
-                                )
-                    } else {
+                    if(shouldScan) startScanner()
+                    else {
                         scanDisposable?.dispose()
-//                            deviceMap.clear()
-//                            value = emptyList()
                         scanDisposable = null
                     }
                 }
+    }
+
+    private fun startScanner() {
+        scanDisposable = rxBleClient.scanBleDevices(scanSettings)
+            .subscribe(
+                {
+                    val device = it.bleDevice.bluetoothDevice
+                    deviceMap[device] = DeviceInfo(it)
+                    deviceListSubject.onNext(deviceMap.values.toList())
+                },
+                { Timber.e(it, "Exception occurred while scanning for BLE devices") }
+            )
     }
 }
 
