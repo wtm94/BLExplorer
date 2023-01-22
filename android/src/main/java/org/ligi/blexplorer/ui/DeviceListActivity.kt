@@ -65,7 +65,6 @@ class DeviceListActivity : AppCompatActivity() {
 
         val requestLocPermLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
         viewModel.bluetoothStateLiveData.observe(this) { state ->
-            @Suppress("NON_EXHAUSTIVE_WHEN")
             when(state) {
                 RxBleClient.State.BLUETOOTH_NOT_ENABLED -> {
                     if (!bluetoothController.isBluetoothEnabled()) {
@@ -81,6 +80,7 @@ class DeviceListActivity : AppCompatActivity() {
                 RxBleClient.State.LOCATION_SERVICES_NOT_ENABLED -> {
                     LocServiceEnableDialog().show(supportFragmentManager, null)
                 }
+                else -> {}
             }
         }
     }
