@@ -3,11 +3,13 @@ package org.ligi.blexplorer
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.annotation.MainThread
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
-import com.uber.autodispose.AutoDispose
+import androidx.lifecycle.ViewModel
+import com.uber.autodispose.AutoDispose.autoDisposable
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -18,12 +20,16 @@ import timber.log.Timber
 
 class HelpActivity : AppCompatActivity() {
     private val binding by lazy { ActivityWithTextviewBinding.inflate(layoutInflater) }
+    private val viewModel: HelpViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         setContentView(binding.root)
-        loadHelpText()
+        binding.contentText.movementMethod = LinkMovementMethod.getInstance()
+
+        viewModel.loadedHtml?.let { binding.contentText.text = it }
+        viewModel.loadedHtml ?: loadHelpText()
     }
 
     @MainThread private fun loadHelpText() {
@@ -38,11 +44,9 @@ class HelpActivity : AppCompatActivity() {
             )
         }.subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .doOnSuccess {
-            binding.contentText.movementMethod = LinkMovementMethod.getInstance()
-            binding.contentText.text = it
-        }.doOnError { Timber.e(it, "Failed to load help text") }
-        .`as`(AutoDispose.autoDisposable(from(this, ON_DESTROY)))
+        .doOnSuccess { binding.contentText.text = it }
+        .doOnError { Timber.e(it, "Failed to load help text") }
+        .`as`(autoDisposable(from(this, ON_DESTROY)))
         .subscribe({},{})
     }
 
@@ -50,4 +54,8 @@ class HelpActivity : AppCompatActivity() {
         finish()
         return super.onOptionsItemSelected(item)
     }
+}
+
+class HelpViewModel : ViewModel() {
+    var loadedHtml: CharSequence? = null
 }
