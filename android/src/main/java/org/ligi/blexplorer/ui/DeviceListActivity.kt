@@ -131,12 +131,10 @@ private class DeviceListLiveData : LiveData<List<DeviceListDeviceInfo>>(), Close
             .toFlowable(BackpressureStrategy.LATEST)
             .observeOn(Schedulers.computation())
             .map {
-                val newList = mutableListOf<DeviceListDeviceInfo>()
-                for(item in it) {
+                return@map it.map { item ->
                     val scanRecordString = parseScanRecord(item.scanResult.scanRecord, item.scanResult.bleDevice.bluetoothDevice)
-                    newList.add(DeviceListDeviceInfo(item, scanRecordString))
+                    DeviceListDeviceInfo(item, scanRecordString)
                 }
-                return@map newList
             }.observeOn(AndroidSchedulers.mainThread())
             .subscribe { value = it }
 
