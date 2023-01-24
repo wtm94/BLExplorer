@@ -13,13 +13,13 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.polidea.rxandroidble2.RxBleDevice
-import com.uber.autodispose.AutoDispose
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import com.uber.autodispose.AutoDispose.autoDisposable
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -30,14 +30,13 @@ import org.ligi.blexplorer.databinding.ActivityWithRecyclerBinding
 import org.ligi.blexplorer.databinding.ItemServiceBinding
 import org.ligi.blexplorer.util.DevicePropertiesDescriber
 import org.ligi.blexplorer.util.KEY_BLUETOOTH_DEVICE
-import org.ligi.snackengage.SnackEngage
-import org.ligi.snackengage.snacks.DefaultRateSnack
+import org.ligi.blexplorer.util.obtainParcelableExtra
 import timber.log.Timber
 
 
 class DeviceServiceExploreActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityWithRecyclerBinding
+    private val  binding by lazy { ActivityWithRecyclerBinding.inflate(layoutInflater) }
     private lateinit var device: BluetoothDevice
     private var gattServicesListDisposable : Disposable? = null
 
@@ -48,19 +47,13 @@ class DeviceServiceExploreActivity : AppCompatActivity() {
             finish()
             return
         }
-        device = intent.getParcelableExtra<BluetoothDevice>(KEY_BLUETOOTH_DEVICE) as BluetoothDevice
+        device = intent.obtainParcelableExtra<BluetoothDevice>(KEY_BLUETOOTH_DEVICE) as BluetoothDevice
 
-        binding = ActivityWithRecyclerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         supportActionBar?.run {
             subtitle = DevicePropertiesDescriber.getNameOrAddressAsFallback(device)
             setDisplayHomeAsUpEnabled(true)
         }
-
-        SnackEngage.from(this).withSnack(DefaultRateSnack()).build().engageWhenAppropriate()
-
-        binding.contentList.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         val adapter = ServiceRecycler(device)
         binding.contentList.adapter = adapter
 
@@ -72,11 +65,9 @@ class DeviceServiceExploreActivity : AppCompatActivity() {
 
         val loadToast = LoadToast(this)
 
-        val actDestScopeProvider = AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY)
-
         //keeping the BLE device connection open so that actions in CharacteristicActivity are faster
         bluetoothController.getConnection(rxbleDevice)
-                .`as`(AutoDispose.autoDisposable(actDestScopeProvider))
+                .`as`(autoDisposable(from(this, ON_DESTROY)))
                 .subscribe({}, {})
 
         gattServicesListDisposable = Completable.fromAction { loadToast.setText(getString(R.string.connecting)).show() }
@@ -89,7 +80,7 @@ class DeviceServiceExploreActivity : AppCompatActivity() {
                 }.flatMapSingle { it.discoverServices() }
                 .take(1)
                 .observeOn(AndroidSchedulers.mainThread())
-                .`as`(AutoDispose.autoDisposable(actDestScopeProvider))
+                .`as`(autoDisposable(from(this, ON_DESTROY)))
                 .subscribe(
                         { services ->
                             adapter.submitList(services.bluetoothGattServices)
@@ -140,7 +131,6 @@ private class BluetoothGattServiceDiffCallback : DiffUtil.ItemCallback<Bluetooth
 }
 
 private class ServiceViewHolder(private val binding: ItemServiceBinding) : RecyclerView.ViewHolder(binding.root) {
-
     fun applyService(device: BluetoothDevice, service: BluetoothGattService) {
         itemView.setOnClickListener { v ->
             val intent = CharacteristicActivity.createIntent(v.context, device, service)
