@@ -185,6 +185,11 @@ private class DeviceViewHolder(private val binding: ItemDeviceBinding) : Recycle
     }
 }
 
+private fun hexString(magnitude: ByteArray?): String? {
+    magnitude ?: return null
+    return BigInteger(1, magnitude).toString(16)
+}
+
 private fun parseScanRecord(scanRecord: ScanRecord, device: BluetoothDevice): String {
     val scanRecordStr = StringBuilder()
     scanRecord.serviceUuids?.forEach { scanRecordStr.append("$it\n") }
@@ -199,12 +204,12 @@ private fun parseScanRecord(scanRecord: ScanRecord, device: BluetoothDevice): St
                 manufacturerSpecificData.get(key),
                 device
             )
-            if (p == null) scanRecordStr.append("$key=${BigInteger(1, manufacturerSpecificData.get(key)).toString(16)}\n")
+            if (p == null) scanRecordStr.append("$key=${hexString(manufacturerSpecificData.get(key))}\n")
             else scanRecordStr.append("${p.keyDescriptor} = {\n$p}\n")
         }
 
     scanRecord.serviceData.keys.forEach { parcelUuid ->
-        scanRecordStr.append("$parcelUuid=${BigInteger(1, scanRecord.serviceData[parcelUuid]).toString(16)}\n")
+        scanRecordStr.append("$parcelUuid=${hexString(scanRecord.serviceData[parcelUuid])}\n")
     }
     return scanRecordStr.toString()
 }
