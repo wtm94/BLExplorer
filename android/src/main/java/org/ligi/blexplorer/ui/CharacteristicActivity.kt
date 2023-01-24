@@ -14,7 +14,7 @@ import android.widget.Toast
 import androidx.annotation.MainThread
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -22,8 +22,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.polidea.rxandroidble2.NotificationSetupMode
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
-import com.uber.autodispose.AutoDispose
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import com.uber.autodispose.AutoDispose.autoDisposable
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from
 import de.cketti.shareintentbuilder.ShareIntentBuilder
 import io.reactivex.BackpressureStrategy
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -32,51 +32,36 @@ import org.ligi.blexplorer.R
 import org.ligi.blexplorer.bluetoothController
 import org.ligi.blexplorer.databinding.ActivityWithRecyclerBinding
 import org.ligi.blexplorer.databinding.ItemCharacteristicBinding
-import org.ligi.blexplorer.util.DevicePropertiesDescriber
-import org.ligi.blexplorer.util.KEY_BLUETOOTH_DEVICE
-import org.ligi.blexplorer.util.KEY_SERVICE_UUID
-import org.ligi.blexplorer.util.hasAllExtras
+import org.ligi.blexplorer.util.*
+import timber.log.Timber
 import java.math.BigInteger
 import java.util.*
 
 
 class CharacteristicActivity : AppCompatActivity() {
-    private lateinit var binding : ActivityWithRecyclerBinding
+    private val binding by lazy { ActivityWithRecyclerBinding.inflate(layoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!intent.hasAllExtras(KEY_BLUETOOTH_DEVICE, KEY_SERVICE_UUID)) {
-            finish()
-            return
-        }
-        val device = intent.getParcelableExtra<BluetoothDevice>(KEY_BLUETOOTH_DEVICE) as BluetoothDevice
+        if (!intent.hasAllExtras(KEY_BLUETOOTH_DEVICE, KEY_SERVICE_UUID)) { finish(); return }
+        val device = intent.obtainParcelableExtra<BluetoothDevice>(KEY_BLUETOOTH_DEVICE) as BluetoothDevice
         val serviceUUID = intent.getStringExtra(KEY_SERVICE_UUID)
-
         val deviceInfo = bluetoothController.getDeviceInfo(device)
-        deviceInfo ?: kotlin.run {
-            finish()
-            return
-        }
+        deviceInfo ?: kotlin.run { finish(); return }
 
-        binding = ActivityWithRecyclerBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         binding.contentList.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         val adapter = CharacteristicRecycler(deviceInfo.scanResult.bleDevice)
         binding.contentList.adapter = adapter
 
-        val autoDisposable = AutoDispose.autoDisposable<BluetoothGattService>(
-                AndroidLifecycleScopeProvider.from(this, Lifecycle.Event.ON_DESTROY)
-        )
-
         bluetoothController.getConnection(deviceInfo.scanResult.bleDevice)
                 .flatMapSingle { it.discoverServices() }
                 .flatMapSingle { it.getService(UUID.fromString(serviceUUID)) }
                 .observeOn(AndroidSchedulers.mainThread())
-                .`as`(autoDisposable)
+                .`as`(autoDisposable(from(this, ON_DESTROY)))
                 .subscribe(
                 {
                     val serviceName = DevicePropertiesDescriber.getServiceName(it, it.uuid.toString())
@@ -87,6 +72,7 @@ class CharacteristicActivity : AppCompatActivity() {
                     adapter.submitList(it.characteristics)
                 },
                 {
+                    Timber.e(it, "Failed to load Bluetooth device characteristics for device $device")
                     Toast.makeText(this@CharacteristicActivity, R.string.characteristic_list_load_error_msg, Toast.LENGTH_SHORT).show()
                     finish()
                 }
