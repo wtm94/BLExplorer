@@ -44,7 +44,10 @@ class HelpActivity : AppCompatActivity() {
             )
         }.subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .doOnSuccess { binding.contentText.text = it }
+        .doOnSuccess {
+            viewModel.loadedHtml = it
+            binding.contentText.text = it
+        }
         .doOnError { Timber.e(it, "Failed to load help text") }
         .`as`(autoDisposable(from(this, ON_DESTROY)))
         .subscribe({},{})
