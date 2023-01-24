@@ -187,11 +187,7 @@ private class DeviceViewHolder(private val binding: ItemDeviceBinding) : Recycle
 
 private fun parseScanRecord(scanRecord: ScanRecord, device: BluetoothDevice): String {
     val scanRecordStr = StringBuilder()
-    scanRecord.serviceUuids?.let { uuids ->
-        for (parcelUuid in uuids) {
-            scanRecordStr.append("$parcelUuid\n")
-        }
-    }
+    scanRecord.serviceUuids?.forEach { scanRecordStr.append("$it\n") }
 
     val manufacturerSpecificData = scanRecord.manufacturerSpecificData
 
@@ -203,29 +199,12 @@ private fun parseScanRecord(scanRecord: ScanRecord, device: BluetoothDevice): St
                 manufacturerSpecificData.get(key),
                 device
             )
-            if (p == null) {
-                scanRecordStr.append(
-                    "$key=${
-                        BigInteger(
-                            1,
-                            manufacturerSpecificData.get(key)
-                        ).toString(16)
-                    }\n"
-                )
-            } else {
-                scanRecordStr.append("${p.keyDescriptor} = {\n$p}\n")
-            }
+            if (p == null) scanRecordStr.append("$key=${BigInteger(1, manufacturerSpecificData.get(key)).toString(16)}\n")
+            else scanRecordStr.append("${p.keyDescriptor} = {\n$p}\n")
         }
 
-    for (parcelUuid in scanRecord.serviceData.keys) {
-        scanRecordStr.append(
-            "$parcelUuid=${
-                BigInteger(
-                    1,
-                    scanRecord.serviceData[parcelUuid]
-                ).toString(16)
-            }\n"
-        )
+    scanRecord.serviceData.keys.forEach { parcelUuid ->
+        scanRecordStr.append("$parcelUuid=${BigInteger(1, scanRecord.serviceData[parcelUuid]).toString(16)}\n")
     }
     return scanRecordStr.toString()
 }
