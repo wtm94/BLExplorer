@@ -25,10 +25,7 @@ class ExitActivityOnBluetoothDisable : Fragment() {
                 .take(1)
                 .observeOn(AndroidSchedulers.mainThread())
                 .`as`(autoDisposable)
-                .subscribe(
-                        { activity?.finish() },
-                        {}
-                )
+                .subscribe({ activity?.finish() } , {})
     }
 }
 
