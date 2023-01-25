@@ -2,6 +2,7 @@ package org.ligi.blexplorer.ui
 
 import android.content.Context
 import android.os.Bundle
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
@@ -33,3 +34,5 @@ class ExitActivityOnBluetoothDisable : Fragment() {
 
 internal val RecyclerView.ViewHolder.context: Context
     get() = itemView.context
+
+internal fun Context.shortToast(toastString: String) = Toast.makeText(this, toastString, Toast.LENGTH_SHORT).show()

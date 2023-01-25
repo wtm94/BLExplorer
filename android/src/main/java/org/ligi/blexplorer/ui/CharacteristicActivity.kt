@@ -190,7 +190,7 @@ private class CharacteristicViewHolder(private val binding: ItemCharacteristicBi
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe (
                             { displayCharacteristicValue(characteristic) },
-                            { Toast.makeText(itemView.context, context.getString(R.string.characteristic_read_failed_message, characteristic.uuid.toString()), Toast.LENGTH_SHORT).show() }
+                            { context.shortToast(context.getString(R.string.characteristic_read_failed_message, characteristic.uuid.toString())) }
                     )
         }
 
@@ -224,10 +224,7 @@ private class CharacteristicViewHolder(private val binding: ItemCharacteristicBi
                     { displayCharacteristicValue(characteristic) },
                     {
                         binding.notify.isChecked = false
-                        Toast.makeText(context,
-                                context.getString(R.string.characteristic_notification_setup_fail_msg, characteristic.uuid.toString()),
-                                Toast.LENGTH_SHORT)
-                                .show()
+                        context.shortToast(context.getString(R.string.characteristic_notification_setup_fail_msg, characteristic.uuid.toString()))
                     }
                 )
     }
