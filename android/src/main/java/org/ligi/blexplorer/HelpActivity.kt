@@ -8,6 +8,7 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.text.HtmlCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,7 +18,6 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.ligi.blexplorer.databinding.ActivityWithTextviewBinding
-import org.ligi.compat.HtmlCompat
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -53,6 +53,7 @@ private class HelpTextLiveData(context: Context) : LiveData<CharSequence>() {
             val inputStream = context.assets.open("help.html")
             HtmlCompat.fromHtml(
                 inputStream.bufferedReader().readText(),
+                HtmlCompat.FROM_HTML_MODE_LEGACY,
                 { launcherDrawable },
                 null
             )
