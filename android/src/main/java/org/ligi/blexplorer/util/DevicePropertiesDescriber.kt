@@ -32,9 +32,9 @@ object DevicePropertiesDescriber {
 
 
     fun describeServiceType(service: BluetoothGattService) = when (service.type) {
-        BluetoothGattService.SERVICE_TYPE_PRIMARY -> "primary"
-        BluetoothGattService.SERVICE_TYPE_SECONDARY -> "secondary"
-        else -> "unknown service type"
+        BluetoothGattService.SERVICE_TYPE_PRIMARY -> R.string.primary
+        BluetoothGattService.SERVICE_TYPE_SECONDARY -> R.string.secondary
+        else -> R.string.unknown_service_type
     }
 
 
@@ -97,4 +97,14 @@ object DevicePropertiesDescriber {
 
     fun getCharacteristicName(characteristic: BluetoothGattCharacteristic, defaultString: String): String =
             StandardUUIDsParser.getCharacteristicName(characteristic.uuid) ?: defaultString
+}
+
+fun BluetoothGattService.serviceTypeDesc() = when (type) {
+    BluetoothGattService.SERVICE_TYPE_PRIMARY -> R.string.primary
+    BluetoothGattService.SERVICE_TYPE_SECONDARY -> R.string.secondary
+    else -> R.string.unknown_service_type
+}
+
+fun BluetoothGattService.name(defaultString: String): String {
+    return StandardUUIDsParser.getServiceName(uuid) ?: defaultString
 }

@@ -1,8 +1,10 @@
 package org.ligi.blexplorer.ui
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.RecyclerView
 import com.polidea.rxandroidble2.RxBleClient
 import com.uber.autodispose.AutoDispose
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
@@ -28,3 +30,6 @@ class ExitActivityOnBluetoothDisable : Fragment() {
                 )
     }
 }
+
+internal val RecyclerView.ViewHolder.context: Context
+    get() = itemView.context

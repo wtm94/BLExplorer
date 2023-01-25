@@ -64,7 +64,7 @@ class CharacteristicActivity : AppCompatActivity() {
                 .`as`(autoDisposable(from(this, ON_DESTROY)))
                 .subscribe(
                 {
-                    val serviceName = DevicePropertiesDescriber.getServiceName(it, it.uuid.toString())
+                    val serviceName = it.name(it.uuid.toString())
                     ConnectionStateChangeLiveData(deviceInfo.scanResult.bleDevice).observe(this) { newState ->
                         val stateToString = DevicePropertiesDescriber.connectionStateToString(newState, this)
                         supportActionBar?.subtitle = "$serviceName ($stateToString)"
@@ -165,7 +165,7 @@ private class CharacteristicViewHolder(private val binding: ItemCharacteristicBi
 
     @MainThread
     fun applyCharacteristic(characteristic: BluetoothGattCharacteristic, bleDevice: RxBleDevice) {
-        binding.name.text = DevicePropertiesDescriber.getCharacteristicName(characteristic, binding.root.context.getString(R.string.unknown))
+        binding.name.text = DevicePropertiesDescriber.getCharacteristicName(characteristic, context.getString(R.string.unknown))
         binding.uuid.text = characteristic.uuid.toString()
 
         displayCharacteristicValue(characteristic)
@@ -190,7 +190,7 @@ private class CharacteristicViewHolder(private val binding: ItemCharacteristicBi
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe (
                             { displayCharacteristicValue(characteristic) },
-                            { Toast.makeText(itemView.context, itemView.context.getString(R.string.characteristic_read_failed_message, characteristic.uuid.toString()), Toast.LENGTH_SHORT).show() }
+                            { Toast.makeText(itemView.context, context.getString(R.string.characteristic_read_failed_message, characteristic.uuid.toString()), Toast.LENGTH_SHORT).show() }
                     )
         }
 
@@ -221,26 +221,22 @@ private class CharacteristicViewHolder(private val binding: ItemCharacteristicBi
                 .toFlowable(BackpressureStrategy.LATEST)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        { bytes ->
-                            displayCharacteristicValue(characteristic)
-                        },
-                        { throwable ->
-                            binding.notify.isChecked = false
-                            Toast.makeText(binding.root.context,
-                                    binding.root.context.getString(R.string.characteristic_notification_setup_fail_msg, characteristic.uuid.toString()),
-                                    Toast.LENGTH_SHORT)
-                                    .show()
-                        }
+                    { displayCharacteristicValue(characteristic) },
+                    {
+                        binding.notify.isChecked = false
+                        Toast.makeText(context,
+                                context.getString(R.string.characteristic_notification_setup_fail_msg, characteristic.uuid.toString()),
+                                Toast.LENGTH_SHORT)
+                                .show()
+                    }
                 )
     }
 
     @UiThread
     private fun displayCharacteristicValue(characteristic: BluetoothGattCharacteristic) {
-        if (characteristic.value != null) {
-            binding.value.text = getValue(characteristic)
-        } else {
-            binding.value.text = itemView.context.getString(R.string.gatt_characteristic_no_value_msg)
-        }
+        binding.value.text =
+                if (characteristic.value!=null)  getValue(characteristic)
+                else context.getString(R.string.gatt_characteristic_no_value_msg)
     }
 
 

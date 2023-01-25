@@ -28,9 +28,8 @@ import org.ligi.blexplorer.R
 import org.ligi.blexplorer.bluetoothController
 import org.ligi.blexplorer.databinding.ActivityWithRecyclerBinding
 import org.ligi.blexplorer.databinding.ItemServiceBinding
-import org.ligi.blexplorer.util.DevicePropertiesDescriber
+import org.ligi.blexplorer.util.*
 import org.ligi.blexplorer.util.KEY_BLUETOOTH_DEVICE
-import org.ligi.blexplorer.util.obtainParcelableExtra
 import timber.log.Timber
 
 
@@ -137,8 +136,8 @@ private class ServiceViewHolder(private val binding: ItemServiceBinding) : Recyc
             v.context.startActivity(intent)
         }
         binding.uuid.text = service.uuid.toString()
-        binding.type.text = DevicePropertiesDescriber.describeServiceType(service)
-        binding.name.text = DevicePropertiesDescriber.getServiceName(service, "unknown")
+        binding.type.setText(service.serviceTypeDesc())
+        binding.name.text = service.name(context.getString(R.string.unknown))
     }
 }
 

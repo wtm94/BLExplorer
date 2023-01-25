@@ -25,4 +25,7 @@
     <string name="rssi_string">%1$d db</string>
     <string name="last_seen_string">%1$d sec</string>
     <string name="help">Help</string>
+    <string name="primary">primary</string>
+    <string name="secondary">secondary</string>
+    <string name="unknown_service_type">unknown service type</string>
 </resources>
