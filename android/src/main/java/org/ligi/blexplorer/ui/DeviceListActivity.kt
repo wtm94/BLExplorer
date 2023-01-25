@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
@@ -88,7 +89,7 @@ class DeviceListActivity : AppCompatActivity() {
     }
 }
 
-class LocPermExplanationDialog(private val requestLocPermLauncher: ActivityResultLauncher<String>) : DialogFragment() {
+class LocPermExplanationDialog(private val requestLocPermLauncher: ActivityResultLauncher<String>) : AppCompatDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return AlertDialog.Builder(requireContext())
                 .setMessage(R.string.loc_perm_explanation)
@@ -97,7 +98,7 @@ class LocPermExplanationDialog(private val requestLocPermLauncher: ActivityResul
     }
 }
 
-class LocServiceEnableDialog : DialogFragment() {
+class LocServiceEnableDialog : AppCompatDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return AlertDialog.Builder(requireContext())
                 .setMessage(R.string.loc_service_enable_dialog_msg)

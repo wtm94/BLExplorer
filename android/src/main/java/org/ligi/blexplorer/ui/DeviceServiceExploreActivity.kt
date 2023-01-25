@@ -12,6 +12,7 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.recyclerview.widget.DiffUtil
@@ -87,7 +88,7 @@ class DeviceServiceExploreActivity : AppCompatActivity() {
                         },
                         { throwable ->
                             Timber.e(throwable, "Failed to discover services for device ${rxbleDevice.bluetoothDevice.name}")
-                            supportFragmentManager.beginTransaction().add(ExitOnDismissAlertDialog(rxbleDevice), ExitOnDismissAlertDialog.TAG).commit()
+                            supportFragmentManager.beginTransaction().add(BLEDeviceConnectionFailedDialog(rxbleDevice), BLEDeviceConnectionFailedDialog.TAG).commit()
                         }
                 )
 
@@ -141,7 +142,7 @@ private class ServiceViewHolder(private val binding: ItemServiceBinding) : Recyc
     }
 }
 
-class ExitOnDismissAlertDialog(private val rxbleDevice: RxBleDevice) : DialogFragment() {
+class BLEDeviceConnectionFailedDialog(private val rxbleDevice: RxBleDevice) : AppCompatDialogFragment() {
     companion object {
         const val TAG = "exit_on_dismiss_alert_dialog"
     }
