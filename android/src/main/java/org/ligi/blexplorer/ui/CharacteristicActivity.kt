@@ -66,8 +66,7 @@ class CharacteristicActivity : AppCompatActivity() {
                 {
                     val serviceName = it.name(it.uuid.toString())
                     ConnectionStateChangeLiveData(deviceInfo.scanResult.bleDevice).observe(this) { newState ->
-                        val stateToString = DevicePropertiesDescriber.connectionStateToString(newState, this)
-                        supportActionBar?.subtitle = "$serviceName ($stateToString)"
+                        supportActionBar?.subtitle = "$serviceName (${newState.stringDesc(this)})"
                     }
                     adapter.submitList(it.characteristics)
                 },
@@ -165,12 +164,12 @@ private class CharacteristicViewHolder(private val binding: ItemCharacteristicBi
 
     @MainThread
     fun applyCharacteristic(characteristic: BluetoothGattCharacteristic, bleDevice: RxBleDevice) {
-        binding.name.text = DevicePropertiesDescriber.getCharacteristicName(characteristic, context.getString(R.string.unknown))
+        binding.name.text = characteristic.name(context.getString(R.string.unknown))
         binding.uuid.text = characteristic.uuid.toString()
 
         displayCharacteristicValue(characteristic)
         binding.type.text = DevicePropertiesDescriber.getProperty(characteristic)
-        binding.permissions.text = DevicePropertiesDescriber.getPermission(characteristic) + "  " + characteristic.descriptors.size
+        binding.permissions.text = "${characteristic.getPermission()}  ${characteristic.descriptors.size}"
 
         if (characteristic.properties and BluetoothGattCharacteristic.PROPERTY_NOTIFY > 0) {
             binding.notify.visibility = View.VISIBLE
@@ -204,7 +203,7 @@ private class CharacteristicViewHolder(private val binding: ItemCharacteristicBi
             context.startActivity(ShareIntentBuilder.from(context).text(text).build())
         }
 
-        binding.notify.setOnCheckedChangeListener { compoundButton, check ->
+        binding.notify.setOnCheckedChangeListener { _, check ->
             if(check) {
                 setupCharacteristicValueNotification(bleDevice, characteristic)
             } else {

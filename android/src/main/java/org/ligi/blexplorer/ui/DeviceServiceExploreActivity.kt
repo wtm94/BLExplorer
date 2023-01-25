@@ -51,7 +51,7 @@ class DeviceServiceExploreActivity : AppCompatActivity() {
 
         setContentView(binding.root)
         supportActionBar?.run {
-            subtitle = DevicePropertiesDescriber.getNameOrAddressAsFallback(device)
+            subtitle = device.nameOrAddressAsFallback()
             setDisplayHomeAsUpEnabled(true)
         }
         val adapter = ServiceRecycler(device)

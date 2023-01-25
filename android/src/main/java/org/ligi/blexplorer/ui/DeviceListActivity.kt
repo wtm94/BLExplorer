@@ -39,6 +39,8 @@ import org.ligi.blexplorer.databinding.ActivityWithRecyclerBinding
 import org.ligi.blexplorer.databinding.ItemDeviceBinding
 import org.ligi.blexplorer.util.DevicePropertiesDescriber
 import org.ligi.blexplorer.util.ManufacturerRecordParserFactory
+import org.ligi.blexplorer.util.describeBondState
+import org.ligi.blexplorer.util.describeType
 import org.ligi.tracedroid.sending.TraceDroidEmailSender
 import java.io.Closeable
 import java.math.BigInteger
@@ -174,8 +176,8 @@ private class DeviceViewHolder(private val binding: ItemDeviceBinding) : Recycle
             itemView.context.getString(R.string.last_seen_string, lastSeenDuration)
         binding.address.text = device.address
         binding.scanRecord.text = deviceInfo.scanRecordString
-        binding.type.text = DevicePropertiesDescriber.describeType(device)
-        binding.bondstate.text = DevicePropertiesDescriber.describeBondState(device)
+        binding.type.text = device.describeType()
+        binding.bondstate.text = device.describeBondState()
     }
 
     fun installOnClickListener() {
