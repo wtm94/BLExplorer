@@ -19,7 +19,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.recyclerview.widget.DiffUtil
@@ -37,11 +36,9 @@ import org.ligi.blexplorer.R
 import org.ligi.blexplorer.bluetoothController
 import org.ligi.blexplorer.databinding.ActivityWithRecyclerBinding
 import org.ligi.blexplorer.databinding.ItemDeviceBinding
-import org.ligi.blexplorer.util.DevicePropertiesDescriber
 import org.ligi.blexplorer.util.ManufacturerRecordParserFactory
 import org.ligi.blexplorer.util.describeBondState
 import org.ligi.blexplorer.util.describeType
-import org.ligi.tracedroid.sending.TraceDroidEmailSender
 import java.io.Closeable
 import java.math.BigInteger
 
@@ -51,7 +48,6 @@ class DeviceListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        TraceDroidEmailSender.sendStackTraces(BUG_REPORT_EMAIL, this)
 
         setContentView(binding.root)
 

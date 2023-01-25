@@ -92,7 +92,6 @@ dependencies {
     implementation 'net.steamcrafted:load-toast:1.0.12'
 
     implementation 'com.github.ligi:KAXT:1.0'
-    implementation 'com.github.ligi:tracedroid:3.0'
     implementation 'com.github.ligi:ExtraCompats:1.0'
     implementation 'com.github.ligi.snackengage:snackengage-playrate:0.27'
     implementation "com.polidea.rxandroidble2:rxandroidble:1.12.1"
