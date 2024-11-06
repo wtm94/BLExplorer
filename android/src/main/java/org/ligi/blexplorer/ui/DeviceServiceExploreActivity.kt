@@ -1,5 +1,6 @@
 package org.ligi.blexplorer.ui
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattService
@@ -13,24 +14,26 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialogFragment
-import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.Lifecycle.Event.ON_DESTROY
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.polidea.rxandroidble2.RxBleDevice
 import com.uber.autodispose.AutoDispose.autoDisposable
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider.from
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import net.steamcrafted.loadtoast.LoadToast
 import org.ligi.blexplorer.R
 import org.ligi.blexplorer.bluetoothController
 import org.ligi.blexplorer.databinding.ActivityWithRecyclerBinding
 import org.ligi.blexplorer.databinding.ItemServiceBinding
-import org.ligi.blexplorer.util.*
 import org.ligi.blexplorer.util.KEY_BLUETOOTH_DEVICE
+import org.ligi.blexplorer.util.name
+import org.ligi.blexplorer.util.nameOrAddressAsFallback
+import org.ligi.blexplorer.util.obtainParcelableExtra
+import org.ligi.blexplorer.util.serviceTypeDesc
 import timber.log.Timber
 
 
@@ -40,6 +43,7 @@ class DeviceServiceExploreActivity : AppCompatActivity() {
     private lateinit var device: BluetoothDevice
     private var gattServicesListDisposable : Disposable? = null
 
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -63,19 +67,17 @@ class DeviceServiceExploreActivity : AppCompatActivity() {
             return
         }
 
-        val loadToast = LoadToast(this)
-
         //keeping the BLE device connection open so that actions in CharacteristicActivity are faster
         bluetoothController.getConnection(rxbleDevice)
                 .`as`(autoDisposable(from(this, ON_DESTROY)))
                 .subscribe({}, {})
 
-        gattServicesListDisposable = Completable.fromAction { loadToast.setText(getString(R.string.connecting)).show() }
+        gattServicesListDisposable = Completable.fromAction { Snackbar.make(binding.root, R.string.connecting, Snackbar.LENGTH_SHORT).show() }
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .andThen(bluetoothController.getConnection(rxbleDevice))
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnNext {
-                    Completable.fromAction { loadToast.setText(getString(R.string.discovering)) }
+                    Completable.fromAction { Snackbar.make(binding.root, R.string.discovering, Snackbar.LENGTH_SHORT).show() }
                             .subscribeOn(AndroidSchedulers.mainThread()).subscribe()
                 }.flatMapSingle { it.discoverServices() }
                 .take(1)
@@ -84,7 +86,7 @@ class DeviceServiceExploreActivity : AppCompatActivity() {
                 .subscribe(
                         { services ->
                             adapter.submitList(services.bluetoothGattServices)
-                            loadToast.success()
+//                            loadToast.success()
                         },
                         { throwable ->
                             Timber.e(throwable, "Failed to discover services for device ${rxbleDevice.bluetoothDevice.name}")
@@ -157,6 +159,7 @@ class BLEDeviceConnectionFailedDialog(private val rxbleDevice: RxBleDevice) : Ap
         requireActivity().finish()
     }
 
+    @SuppressLint("MissingPermission")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return AlertDialog.Builder(requireContext())
                 .setTitle(R.string.error)
