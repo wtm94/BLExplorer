@@ -17,7 +17,6 @@ android {
         versionCode 14
         versionName "2.0"
         archivesBaseName = "BLExplorer-$versionName"
-        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
@@ -48,12 +47,6 @@ android {
         exclude 'META-INF/maven/com.google.guava/guava/pom.properties'
         exclude 'META-INF/maven/com.google.guava/guava/pom.xml'
 
-    }
-
-    sourceSets {
-        debug {
-            manifest.srcFile 'src/androidTest/AndroidManifest.xml'
-        }
     }
 
     flavorDimensions "build"
@@ -97,27 +90,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     implementation "com.polidea.rxandroidble2:rxandroidble:1.12.1"
-
-    androidTestImplementation 'androidx.annotation:annotation:1.9.1'
-    androidTestImplementation 'androidx.appcompat:appcompat:1.7.0'
-    androidTestImplementation 'com.google.android.material:material:1.12.0'
-
-    androidTestImplementation('androidx.test.espresso:espresso-contrib:3.6.1') {
-        // http://stackoverflow.com/questions/30578243/why-would-adding-espresso-contrib-cause-an-inflateexception
-        exclude group: 'com.android.support', module: 'appcompat'
-        exclude group: 'com.android.support', module: 'support-v4'
-        exclude module: 'recyclerview-v7'
-    }
-
-    androidTestImplementation('androidx.test.espresso:espresso-web:3.6.1')
-    androidTestImplementation 'com.squareup.assertj:assertj-android:1.1.1'
-    androidTestImplementation 'org.mockito:mockito-core:2.25.0'
-    androidTestImplementation 'com.google.dexmaker:dexmaker-mockito:1.2'
-
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation 'com.squareup.assertj:assertj-android:1.1.1'
-    testImplementation 'androidx.annotation:annotation:1.9.1'
-    testImplementation 'org.mockito:mockito-core:2.25.0'
 
     implementation 'de.cketti.share:share-intent-builder:0.0.2'
 
